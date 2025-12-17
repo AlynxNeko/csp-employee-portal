@@ -10,7 +10,7 @@ const isValidInput = (value: unknown) => typeof value === "string" && value.trim
 export async function registerAction(
   _prevState: AuthActionState,
   formData: FormData,
-): Promise<AuthActionState | void> {
+): Promise<AuthActionState> {
   'use server';
   const email = formData.get("email");
   const password = formData.get("password");
@@ -30,12 +30,13 @@ export async function registerAction(
   }
 
   redirect("/login");
+  return {};
 }
 
 export async function loginAction(
   _prevState: AuthActionState,
   formData: FormData,
-): Promise<AuthActionState | void> {
+): Promise<AuthActionState> {
   'use server';
   const email = formData.get("email");
   const password = formData.get("password");
@@ -55,6 +56,7 @@ export async function loginAction(
   }
 
   redirect("/dashboard");
+  return {};
 }
 
 export async function logoutAction(): Promise<void> {

@@ -9,9 +9,7 @@ export type AuthFormProps = {
   title: string;
   description: string;
   submitLabel: string;
-  action:
-    | ((state: AuthActionState, formData: FormData) => Promise<AuthActionState | void>)
-    | ((state: AuthActionState, formData: FormData) => AuthActionState | void);
+  action: (state: AuthActionState, formData: FormData) => Promise<AuthActionState>;
   helperText: string;
   helperHref: string;
 };
