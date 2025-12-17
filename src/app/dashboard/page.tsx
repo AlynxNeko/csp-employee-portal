@@ -1,13 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { logoutAction } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
-
-type Announcement = {
-  id: number;
-  title: string;
-  content: string;
-  created_at: string;
-};
+import { Suspense } from "react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -20,11 +14,6 @@ export default async function DashboardPage() {
   if (userError || !user) {
     redirect("/login");
   }
-
-  const { data: announcements, error: announcementsError } = await supabase
-    .from("announcements")
-    .select("id, title, content, created_at")
-    .order("created_at", { ascending: false });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-indigo-50 px-4 py-10">
@@ -48,34 +37,92 @@ export default async function DashboardPage() {
         <section className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900">Pengumuman</h2>
-            <p className="text-sm text-slate-600">
-              {announcements?.length ? `${announcements.length} item` : "Tidak ada data."}
-            </p>
+            <Suspense fallback={<AnnouncementsSkeleton count={6} />}>
+              <AnnouncementCount />
+            </Suspense>
           </div>
 
-          {announcementsError ? (
-            <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-              Gagal memuat data pengumuman: {announcementsError.message}
-            </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {announcements?.map((item: Announcement) => (
-                <article
-                  key={item.id}
-                  className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <div className="flex items-center justify-between text-xs text-slate-500">
-                    <span>ID: {item.id}</span>
-                    <span>{new Date(item.created_at).toLocaleDateString()}</span>
-                  </div>
-                  <h3 className="mt-2 text-lg font-semibold text-slate-900">{item.title}</h3>
-                  <p className="mt-1 text-sm text-slate-700">{item.content}</p>
-                </article>
-              ))}
-            </div>
-          )}
+          <Suspense fallback={<AnnouncementsSkeleton count={6} />}>
+            <AnnouncementsSection />
+          </Suspense>
         </section>
       </div>
+    </div>
+  );
+}
+
+type Announcement = {
+  id: number;
+  title: string;
+  content: string;
+  created_at: string;
+};
+
+async function fetchAnnouncements() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("announcements")
+    .select("id, title, content, created_at")
+    .order("created_at", { ascending: false });
+  return { data, error };
+}
+
+async function AnnouncementCount() {
+  const { data } = await fetchAnnouncements();
+  return (
+    <p className="text-sm text-slate-600">
+      {data?.length ? `${data.length} item` : "Tidak ada data."}
+    </p>
+  );
+}
+
+async function AnnouncementsSection() {
+  const { data, error } = await fetchAnnouncements();
+
+  if (error) {
+    return (
+      <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+        Gagal memuat data pengumuman: {error.message}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      {data?.map((item) => (
+        <article
+          key={item.id}
+          className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+        >
+          <div className="flex items-center justify-between text-xs text-slate-500">
+            <span>ID: {item.id}</span>
+            <span>{new Date(item.created_at).toLocaleDateString()}</span>
+          </div>
+          <h3 className="mt-2 text-lg font-semibold text-slate-900">{item.title}</h3>
+          <p className="mt-1 text-sm text-slate-700">{item.content}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function AnnouncementsSkeleton({ count = 4 }: { count?: number }) {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      {Array.from({ length: count }).map((_, idx) => (
+        <div
+          key={idx}
+          className="animate-pulse rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+        >
+          <div className="flex items-center justify-between text-xs text-slate-400">
+            <span className="h-3 w-12 rounded bg-slate-200" />
+            <span className="h-3 w-16 rounded bg-slate-200" />
+          </div>
+          <div className="mt-3 h-4 w-2/3 rounded bg-slate-200" />
+          <div className="mt-2 h-3 w-full rounded bg-slate-200" />
+          <div className="mt-1 h-3 w-5/6 rounded bg-slate-200" />
+        </div>
+      ))}
     </div>
   );
 }
