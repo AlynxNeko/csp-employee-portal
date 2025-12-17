@@ -16,7 +16,6 @@ A secure Employee Portal built with **Next.js 16**, **Supabase**, and **Tailwind
 - **Language**: TypeScript
 - **Backend & Auth**: Supabase (PostgreSQL + Authentication)
 - **Styling**: Tailwind CSS 4
-- **Database**: Supabase 
 - **Deployment**: Vercel
 
 ## 📋 Project Structure
