@@ -30,7 +30,8 @@ function SubmitButton({ label }: { label: string }) {
 }
 
 export function AuthForm({ title, description, submitLabel, action, helperHref, helperText }: AuthFormProps) {
-  const [state, formAction] = useActionState<AuthActionState, FormData>(action, initialState);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [state, formAction] = useActionState(action as any, initialState);
 
   return (
     <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
